@@ -10,11 +10,10 @@ import java.util.UUID;
 @Table(name = "tb_ath_author")
 public class tb_ath_author {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public UUID ath_n_id;
     public String ath_c_first_name;
     public String ath_c_last_name;
-    public String ath_c_full_name;
 
     @ManyToMany(mappedBy = "bok_ath_c_author")
     public Set<tb_bok_book> bok_ath_bok_c_book = new HashSet<>();
@@ -36,15 +35,13 @@ public class tb_ath_author {
     public String get_ath_c_last_name() {
         return ath_c_last_name;
     }
-
+    @Transient
     public String get_ath_c_full_name() {
         return ath_c_first_name + " " + ath_c_last_name;
     }
-
     public Set<tb_bok_book> get_bok_ath_c_book() {
         return bok_ath_bok_c_book;
     }
-
     public Set<tb_ord_order_book> get_ord_bok_ath_c_author() {
         return ord_bok_ath_c_author;
     }
@@ -60,10 +57,6 @@ public class tb_ath_author {
 
     public void set_ath_c_last_name(String ath_c_last_name) {
         this.ath_c_last_name = ath_c_last_name;
-    }
-
-    public void set_ath_c_full_name(String ath_c_full_name) {
-        this.ath_c_full_name = ath_c_full_name;
     }
 
     public void set_ath_bok_c_book(Set<tb_bok_book> bok_ath_bok_c_book) {

@@ -7,68 +7,80 @@ import com.bookshop.service.user_service;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import org.springframework.ui.Model;
-
-import org.springframework.validation.BindingResult;
 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/user")
 public class user_controller {
+
     private final user_service user_service;
     private final user_repository user_repository;
-    private BCryptPasswordEncoder password_encoder;
-    private certificate_service_imp certificate_service;
+    private final  BCryptPasswordEncoder password_encoder;
+    private final certificate_service_imp certificate_service;
 
-    public user_controller(user_service user_service, user_repository user_repository) {
+    @Autowired
+    public user_controller(user_service user_service, user_repository user_repository, BCryptPasswordEncoder password_encoder, certificate_service_imp certificate_service) {
         this.user_service = user_service;
         this.user_repository = user_repository;
-    }
-    @GetMapping("/api/v1/update/{id}")
-    public String update_author(Model model, @PathVariable UUID id) {
-        model.addAttribute("user", user_repository.findById(id));
-        return "/api/v1/user/update";
+        this.password_encoder = password_encoder;
+        this.certificate_service = certificate_service;
     }
 
-    @PostMapping("/api/v1/update")
-    public String perform_update(@ModelAttribute @Valid tb_usr_user user, BindingResult result) {
-        if (result.hasErrors()) {
-            return "/api/v1/user/update";
-        }
-        user_repository.save(user);
-        return "redirect:/api/v1/user/show_user";
-
+    @GetMapping("/update/{id}")
+    public ResponseEntity<tb_usr_user> get_user_to_update(@PathVariable UUID id) {
+        return user_repository.findById(id)
+                .map(user -> ResponseEntity.ok(user))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-    @PostMapping("/signin")
-    public String signIn(@RequestBody @Valid tb_usr_user user) {
+
+    @PostMapping("/update")
+    public ResponseEntity<String> perform_update(@RequestBody @Valid tb_usr_user user) {
         try {
-            if (!certificate_service.store_certificate(user.get_usr_usr_c_certificate())); {
-                return "Certificado inválido!";
-            }
-            try {
-                user_service.saveUser(user, "USER");
-                return "Usuário criado com sucesso!";
-            } catch (Exception e) {
-                return "Erro ao criar o usuário: " + e.getMessage();
-            }
+            user_repository.save(user);
+            return ResponseEntity.ok("User updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user: " + e.getMessage());
         }
     }
+
     @PostMapping("/api/v1/signup")
-    public String sign_up(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<String> signUp(@RequestBody @Valid tb_usr_user user) {
+        try {
+            String certificate = user.get_usr_usr_c_certificate().toString();
+            boolean is_certificate_valid = certificate_service.store_certificate(certificate);
+            if (!is_certificate_valid) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid certificate!");
+            }
+
+            user_service.saveUser(user, "USER");
+            return ResponseEntity.ok("User created successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating user: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<String> signIn(@RequestParam String username, @RequestParam String password) {
         tb_usr_user user = user_service.findByUsername(username);
         if (user != null && password_encoder.matches(password, user.get_usr_c_password())) {
-            return "User logged in successfully!";
+            return ResponseEntity.ok("User logged in successfully!");
         } else {
-            return "Incorrect username or password!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password!");
         }
     }
-    @PostMapping("/api/v1/logout")
-    public String logout() {
-        return "User successfully logged out!";
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        return ResponseEntity.ok("User successfully logged out!");
     }
 }

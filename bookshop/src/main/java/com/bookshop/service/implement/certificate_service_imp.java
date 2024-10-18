@@ -15,10 +15,15 @@ public class certificate_service_imp{
     private certificate_repository certificate_repository;
     private aes_encryption_service_imp aes_encryption_service;
 
-    public void store_certificate(String certificate) throws Exception {
-        String encrypted_certificate = aes_encryption_service.encrypt(certificate);
-        tb_usr_user_certificate usr_certificate= new tb_usr_user_certificate();
-        usr_certificate.setUsrc_c_certificate_hash(encrypted_certificate);
-        certificate_repository.save(usr_certificate);
+    public boolean store_certificate(String certificate){
+        try {
+            String encrypted_certificate = aes_encryption_service.encrypt(certificate);
+            tb_usr_user_certificate usr_certificate = new tb_usr_user_certificate();
+            usr_certificate.setUsrc_c_certificate_hash(encrypted_certificate);
+            certificate_repository.save(usr_certificate);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -43,8 +43,8 @@ public class tb_usr_user {
             CascadeType.PERSIST,
             CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name = "usr_usr_c_certificate", joinColumns = @JoinColumn(name = "usr_n_id"),
-            inverseJoinColumns = @JoinColumn(name = "usr_n_id"))
-    public Set<tb_rol_role> usr_usr_c_certificate;
+            inverseJoinColumns = @JoinColumn(name = "usrc_n_id"))
+    public Set<tb_usr_user_certificate> usr_usr_c_certificate;
 
     //GETTERS
     public UUID get_usr_n_id() {
@@ -92,7 +92,7 @@ public class tb_usr_user {
     public Set<tb_rol_role> get_usr_rol_c_role() {
         return usr_rol_c_role;
     }
-    public Set<tb_rol_role> get_usr_usr_c_certificate() {
+    public Set<tb_usr_user_certificate> get_usr_usr_c_certificate() {
         return usr_usr_c_certificate;
     }
 
@@ -142,7 +142,7 @@ public class tb_usr_user {
     public void set_usr_rol_c_role(Set<tb_rol_role> usr_rol_c_role) {
         this.usr_rol_c_role = usr_rol_c_role;
     }
-    public void set_usr_usr_c_certificate(Set<tb_rol_role> usr_usr_c_certificate) {
+    public void set_usr_usr_c_certificate(Set<tb_usr_user_certificate> usr_usr_c_certificate) {
         this.usr_usr_c_certificate = usr_usr_c_certificate;
     }
 }
